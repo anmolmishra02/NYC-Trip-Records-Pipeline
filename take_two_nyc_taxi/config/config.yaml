@@ -1,1 +1,29 @@
 
+environment: dev
+
+storage:
+  catalog: workspace
+  schema: nyc_taxi
+  volume: source_data
+
+source:
+  yellow_folder: Yellow
+  green_folder: green
+  zone_lookup_file: taxi_zone_lookup.csv
+
+schemas:
+  bronze: nyc_taxi_bronze
+  silver: nyc_taxi_silver
+  gold: nyc_taxi_gold
+
+tables:
+  yellow_trips: yellow_trips
+  green_trips: green_trips
+  taxi_zone_lookup: taxi_zone_lookup
+  unified_trips: unified_trips
+  dim_taxi_zones: dim_taxi_zones
+  quarantined_trips: quarantined_trips
+  daily_revenue: daily_revenue
+  airport_analysis: airport_analysis
+  congestion_pricing_impact: congestion_pricing_impact
+
