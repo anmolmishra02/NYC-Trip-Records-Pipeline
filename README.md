@@ -1,6 +1,5 @@
 # NYC Taxi Trip Records Pipeline
 
-**Senior Data Engineer Take-Home Exercise**
 
 ## Overview
 A Databricks pipeline using PySpark and Delta Lake to process NYC TLC Yellow and Green taxi trip records for December 2024–February 2025. It follows Bronze → Silver → Gold and produces daily revenue, airport movement/tipping, and congestion-pricing comparison datasets.
