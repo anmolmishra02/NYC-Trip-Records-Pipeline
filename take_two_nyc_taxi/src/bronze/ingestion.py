@@ -1,21 +1,31 @@
 
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
+
+from config.config_loader import load_config
 
 
 # --------------------------------------------------
 # Configuration
 # --------------------------------------------------
 
-SOURCE_PATH = "/Volumes/workspace/nyc_taxi/source_data"
+CONFIG = load_config()
 
-BRONZE_SCHEMA = "workspace.nyc_taxi_bronze"
+STORAGE_CONFIG = CONFIG["storage"]
+SOURCE_CONFIG = CONFIG["source"]
 
-MONTHS = [
-    "2024-12",
-    "2025-01",
-    "2025-02"
-]
+CATALOG = STORAGE_CONFIG["catalog"]
+STORAGE_SCHEMA = STORAGE_CONFIG["schema"]
+VOLUME = STORAGE_CONFIG["volume"]
+
+SOURCE_PATH = (
+    f"/Volumes/{CATALOG}/{STORAGE_SCHEMA}/{VOLUME}"
+)
+
+BRONZE_SCHEMA = f"{CATALOG}.{CONFIG['schemas']['bronze']}"
+
+MONTHS = CONFIG["months"]
+
+TABLES = CONFIG["tables"]
 
 
 # --------------------------------------------------
@@ -55,13 +65,12 @@ def ingest_yellow_trips(spark):
     for month in MONTHS:
 
         file_path = (
-            f"{SOURCE_PATH}/Yellow/"
+            f"{SOURCE_PATH}/{SOURCE_CONFIG['yellow_folder']}/"
             f"yellow_tripdata_{month}.parquet"
         )
 
         df = spark.read.parquet(file_path)
 
-        # Add ingestion metadata
         df = (
             df
             .withColumn("source_month", F.lit(month))
@@ -73,7 +82,6 @@ def ingest_yellow_trips(spark):
 
         print(f"Read Yellow Taxi data for {month}")
 
-    # Combine all months
     yellow_df = yellow_dfs[0]
 
     for df in yellow_dfs[1:]:
@@ -82,7 +90,10 @@ def ingest_yellow_trips(spark):
             allowMissingColumns=True
         )
 
-    write_bronze_table(yellow_df, "yellow_trips")
+    write_bronze_table(
+        yellow_df,
+        TABLES["yellow_trips"]
+    )
 
     return yellow_df
 
@@ -102,13 +113,12 @@ def ingest_green_trips(spark):
     for month in MONTHS:
 
         file_path = (
-            f"{SOURCE_PATH}/green/"
+            f"{SOURCE_PATH}/{SOURCE_CONFIG['green_folder']}/"
             f"green_tripdata_{month}.parquet"
         )
 
         df = spark.read.parquet(file_path)
 
-        # Add ingestion metadata
         df = (
             df
             .withColumn("source_month", F.lit(month))
@@ -120,7 +130,6 @@ def ingest_green_trips(spark):
 
         print(f"Read Green Taxi data for {month}")
 
-    # Combine all months
     green_df = green_dfs[0]
 
     for df in green_dfs[1:]:
@@ -129,7 +138,10 @@ def ingest_green_trips(spark):
             allowMissingColumns=True
         )
 
-    write_bronze_table(green_df, "green_trips")
+    write_bronze_table(
+        green_df,
+        TABLES["green_trips"]
+    )
 
     return green_df
 
@@ -144,7 +156,9 @@ def ingest_taxi_zone_lookup(spark):
     it into a Bronze Delta table.
     """
 
-    file_path = f"{SOURCE_PATH}/taxi_zone_lookup.csv"
+    file_path = (
+        f"{SOURCE_PATH}/{SOURCE_CONFIG['zone_lookup_file']}"
+    )
 
     zone_df = (
         spark.read
@@ -160,6 +174,9 @@ def ingest_taxi_zone_lookup(spark):
         .withColumn("ingestion_timestamp", F.current_timestamp())
     )
 
-    write_bronze_table(zone_df, "taxi_zone_lookup")
+    write_bronze_table(
+        zone_df,
+        TABLES["taxi_zone_lookup"]
+    )
 
     return zone_df

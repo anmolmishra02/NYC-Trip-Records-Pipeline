@@ -1,0 +1,26 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Databricks and local files
+.databricks/
+*.log
+
+# Temporary files
+tmp/
+temp/
+.DS_Store
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Data files
+*.parquet
+*.csv
+*.delta

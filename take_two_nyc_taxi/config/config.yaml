@@ -11,6 +11,15 @@ source:
   green_folder: green
   zone_lookup_file: taxi_zone_lookup.csv
 
+months:
+  - "2024-12"
+  - "2025-01"
+  - "2025-02"
+
+reporting:
+  start_date: "2024-12-01"
+  end_date: "2025-02-28"
+
 schemas:
   bronze: nyc_taxi_bronze
   silver: nyc_taxi_silver
@@ -26,4 +35,3 @@ tables:
   daily_revenue: daily_revenue
   airport_analysis: airport_analysis
   congestion_pricing_impact: congestion_pricing_impact
-
