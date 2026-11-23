@@ -20,18 +20,21 @@ The solution follows the Medallion Architecture (Bronze, Silver and Gold) to ing
 flowchart TD
     A["main.py – Pipeline Orchestration"] --> B["Automated Resource Setup"]
     B --> C["Bronze Ingestion Notebook"]
-    S1["Yellow Taxi Parquet"] --> C
-    S2["Green Taxi Parquet"] --> C
-    S3["Taxi Zone Lookup CSV"] --> C
-    C --> D[("Bronze Delta Tables")]
-    D --> E["Silver Transformations & DQ"]
-    E --> F[("Silver Delta Tables")]
-    F --> G["Gold Aggregations"]
-    G --> H[("Gold Delta Tables")]
-    H --> I["CSV Results & SQL Queries"]
+    C --> D["Download Source Files"]
+    S1["Yellow Taxi Parquet"] --> D
+    S2["Green Taxi Parquet"] --> D
+    S3["Taxi Zone Lookup CSV"] --> D
+    D --> E["Bronze Ingestion"]
+    E --> F[("Bronze Delta Tables")]
+    F --> G["Silver Transformations & DQ"]
+    G --> H[("Silver Delta Tables")]
+    H --> I["Gold Aggregations"]
+    I --> J[("Gold Delta Tables")]
+    J --> K["Saved CSV Results"]
 ```
 
 ### Bronze – Raw Ingestion
+
 - Downloads the required monthly Yellow and Green Parquet files and Taxi Zone Lookup CSV through the Bronze notebook.
 - Adds ingestion metadata such as source month, source file and ingestion timestamp.
 - Stores source datasets as Delta tables.
@@ -39,6 +42,7 @@ flowchart TD
 **Tables:** `yellow_trips`, `green_trips`, `taxi_zone_lookup`
 
 ### Silver – Standardization and Data Quality
+
 - Maps Yellow TPEP and Green LPEP fields into a common canonical schema.
 - Standardizes column names and data types and combines records using `unionByName`.
 - Enriches trip data using the Taxi Zone Lookup dimension.
@@ -47,6 +51,7 @@ flowchart TD
 **Tables:** `unified_trips`, `dim_taxi_zones`, `quarantined_trips`
 
 ### Gold – Business Analytics
+
 Produces three business-ready Delta tables:
 
 | Table | Purpose |
@@ -54,6 +59,41 @@ Produces three business-ready Delta tables:
 | `daily_revenue` | Daily collected revenue by pickup borough and service type |
 | `airport_analysis` | Monthly airport volume, average fare and tipping metrics by service type and direction |
 | `congestion_pricing_impact` | Before-and-after comparison of inbound Manhattan CBD trips |
+
+### Gold Layer – Business Questions and Analytical Decisions
+
+#### 1. Daily Revenue by Pickup Borough and Service Type
+
+**Table:** `daily_revenue`
+
+- Aggregates trips by pickup date, pickup borough and service type.
+- Uses `total_amount` to calculate collected revenue.
+- Includes configured successful payment types with non-null total amounts.
+- Retains total trip counts and excluded-payment counts for reconciliation.
+
+**Key decision:** Total trip volume and collected revenue are calculated separately so that unsuccessful or unsupported payment types do not inflate reported revenue.
+
+#### 2. Airport Trips and Tipping Behaviour
+
+**Table:** `airport_analysis`
+
+- Analyses trips to and from JFK, LaGuardia and Newark.
+- Groups results by month, airport, service type and trip direction.
+- Reports trip volume, average fare and credit-card tipping metrics.
+- Separates observed credit-card tips from positive tips.
+
+**Key decision:** Airport direction is identified using pickup and drop-off locations. Credit-card transactions are used for tipping analysis because cash tips are not consistently captured. The tipping rate uses observed credit-card tips as its denominator.
+
+#### 3. Congestion Pricing Impact
+
+**Table:** `congestion_pricing_impact`
+
+- Identifies inbound Manhattan CBD trips using configured CBD zone IDs.
+- Compares trips before and after January 5, 2025.
+- Reports trip volume, paid trips, collected revenue, average fare and congestion-fee metrics.
+- Includes average daily trips and revenue to support comparison across periods of different lengths.
+
+**Key decision:** Drop-off timestamp is used as a proxy for the time a trip enters the CBD. The analysis is descriptive and does not establish that congestion pricing alone caused the observed changes.
 
 ## 3. Project Structure
 
@@ -122,7 +162,7 @@ Stages execute sequentially. If a stage fails, subsequent dependent stages are s
 
 Data-quality rules are documented in `DQ_SPEC.md` and implemented in the Silver layer.
 
-Key issues and handling:
+**Key issues and handling:**
 - Missing pickup/drop-off timestamps: quarantine.
 - Drop-off earlier than pickup: quarantine.
 - Missing pickup/drop-off location IDs: quarantine.
