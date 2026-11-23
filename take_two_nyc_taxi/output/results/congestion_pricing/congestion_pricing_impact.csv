@@ -1,0 +1,5 @@
+period,service_type,trip_count,paid_trip_count,collected_revenue,average_fare,total_cbd_congestion_fee,trips_with_cbd_fee,period_days,average_trips_per_day,average_revenue_per_day
+BEFORE,yellow,569849,557220,22856650.6,28.4,1.5,2,35,16281.4,653047.16
+AFTER,yellow,914038,897729,32226103.62,24.07,645810.75,867106,55,16618.87,585929.16
+AFTER,green,6960,6360,249552.95,28.73,4520.25,6027,55,126.55,4537.33
+BEFORE,green,4486,4213,177125.46,32.22,0.0,0,35,128.17,5060.73
