@@ -3,6 +3,10 @@ from pathlib import Path
 import os
 import logging
 
+# --------------------------------------------------
+# Project root detection
+# --------------------------------------------------
+
 cwd = Path.cwd()
 
 PROJECT_ROOT = next(
@@ -19,28 +23,74 @@ if PROJECT_ROOT is None:
 
 os.chdir(PROJECT_ROOT)
 
-logging.info(f"Project root: {PROJECT_ROOT}")
+# --------------------------------------------------
+# Logging configuration
+# --------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
+logger = logging.getLogger("nyc_taxi_pipeline")
+
+logger.info("Project root: %s", PROJECT_ROOT)
+
+
+# --------------------------------------------------
+# Pipeline execution
+# --------------------------------------------------
+
+def run_stage(stage_name, notebook_name):
+
+    notebook_path = str(PROJECT_ROOT / "notebooks" / notebook_name)
+
+    logger.info("Starting %s stage", stage_name)
+
+    try:
+        result = dbutils.notebook.run(
+            notebook_path,
+            3600
+        )
+
+        if result != "SUCCESS":
+            raise RuntimeError(
+                f"{stage_name} returned unexpected status: {result}"
+            )
+
+        logger.info("%s stage completed successfully", stage_name)
+
+    except Exception:
+        logger.exception("%s stage failed", stage_name)
+        raise
+
+
+# --------------------------------------------------
+# Main pipeline
+# --------------------------------------------------
 
 def main():
-    logging.info("Starting NYC Taxi pipeline")
 
-    # Execute notebooks in sequence
-    dbutils.notebook.run(
-        str(PROJECT_ROOT / "notebooks" / "bronze_ingestion"),
-        0
-    )
+    logger.info("Starting NYC Taxi pipeline")
 
-    dbutils.notebook.run(
-        str(PROJECT_ROOT / "notebooks" / "silver_transformations"),
-        0
-    )
+    try:
+        # Stage 1: Bronze
+        run_stage("Bronze", "bronze_ingestion")
 
-    dbutils.notebook.run(
-        str(PROJECT_ROOT / "notebooks" / "gold_analytics"),
-        0
-    )
+        # Dependency: Silver runs only after Bronze succeeds
+        run_stage("Silver", "silver_transformations")
 
-    logging.info("NYC Taxi pipeline completed successfully")
+        # Dependency: Gold runs only after Silver succeeds
+        run_stage("Gold", "gold_analytics")
+
+        logger.info("NYC Taxi pipeline completed successfully")
+
+    except Exception:
+        logger.exception(
+            "Pipeline execution failed. Remaining dependent stages skipped."
+        )
+        raise
+
 
 if __name__ == "__main__":
     main()
