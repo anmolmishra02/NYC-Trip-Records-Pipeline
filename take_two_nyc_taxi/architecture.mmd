@@ -1,0 +1,135 @@
+
+flowchart TD
+
+    %% =========================
+    %% PIPELINE ORCHESTRATION
+    %% =========================
+
+    subgraph ORCHESTRATION["Pipeline Orchestration - main.py"]
+        A["main.py"]
+        B["Load and Validate Configuration<br/>config/config.yaml"]
+        C["Create Databricks Resources<br/>setup/create_resources.sql"]
+        D["Create Source Folders<br/>setup/create_folders.py"]
+
+        A --> B --> C --> D
+    end
+
+    %% =========================
+    %% SOURCE DATA
+    %% =========================
+
+    subgraph SOURCE["Source Data - Unity Catalog Volume"]
+        E["Yellow Taxi Records<br/>Dec 2024 - Feb 2025<br/>Parquet"]
+        F["Green Taxi Records<br/>Dec 2024 - Feb 2025<br/>Parquet"]
+        G["Taxi Zone Lookup<br/>CSV"]
+    end
+
+    D --> E
+    D --> F
+    D --> G
+
+    %% =========================
+    %% BRONZE LAYER
+    %% =========================
+
+    subgraph BRONZE["Bronze Layer - Raw Ingestion"]
+        H["Yellow Trips<br/>yellow_trips"]
+        I["Green Trips<br/>green_trips"]
+        J["Taxi Zone Lookup<br/>taxi_zone_lookup"]
+    end
+
+    E --> H
+    F --> I
+    G --> J
+
+    %% =========================
+    %% SILVER LAYER
+    %% =========================
+
+    subgraph SILVER["Silver Layer - Standardization and Data Quality"]
+        K["Yellow Schema Mapping<br/>TPEP Fields"]
+        L["Green Schema Mapping<br/>LPEP Fields"]
+        M["Unified Trips<br/>Canonical Schema"]
+        N["Data Quality Validation"]
+        O["Validated Trips"]
+        P["Quarantined Trips"]
+        Q["Taxi Zone Dimension<br/>dim_taxi_zones"]
+    end
+
+    H --> K
+    I --> L
+
+    K --> M
+    L --> M
+
+    M --> N
+
+    N -->|Valid Records| O
+    N -->|Invalid Records| P
+
+    J --> Q
+
+    %% =========================
+    %% GOLD LAYER
+    %% =========================
+
+    subgraph GOLD["Gold Layer - Business Analytics"]
+        R["Daily Revenue<br/>daily_revenue"]
+        S["Airport Analysis<br/>airport_analysis"]
+        T["Congestion Pricing Impact<br/>congestion_pricing_impact"]
+    end
+
+    O --> R
+    O --> S
+    O --> T
+
+    Q --> R
+    Q --> S
+
+    %% =========================
+    %% OUTPUT DELIVERABLES
+    %% =========================
+
+    subgraph OUTPUT["Assessment Deliverables - output/"]
+        U["Gold Results<br/>CSV Files"]
+        V["SQL Queries<br/>.sql Files"]
+        W["Execution Evidence<br/>Screenshots"]
+    end
+
+    R --> U
+    S --> U
+    T --> U
+
+    R --> V
+    S --> V
+    T --> V
+
+    R --> W
+    S --> W
+    T --> W
+
+    %% =========================
+    %% EXECUTION DEPENDENCIES
+    %% =========================
+
+    D -.->|After setup succeeds| H
+    H -.->|Bronze succeeds| K
+    M -.->|Silver succeeds| R
+
+    %% =========================
+    %% STYLING
+    %% =========================
+
+    classDef orchestration fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef source fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef bronze fill:#ffedd5,stroke:#ea580c,color:#7c2d12
+    classDef silver fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef gold fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
+    classDef output fill:#f3f4f6,stroke:#6b7280,color:#111827
+
+    class A,B,C,D orchestration
+    class E,F,G source
+    class H,I,J bronze
+    class K,L,M,N,O,P,Q silver
+    class R,S,T gold
+    class U,V,W output
