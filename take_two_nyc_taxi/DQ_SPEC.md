@@ -32,7 +32,6 @@
 - Negative fare, total amount and congestion-fee values were observed and retained with warning metadata.
 - December 2024 does not provide `cbd_congestion_fee`; the unified value is NULL.
 
-Warning counts can overlap: one trip may trigger multiple warning rules. Do not sum warning counts as distinct records.
 
 ## Pipeline-level failure policy
 - Critical row-level failures route the record to quarantine with a failure reason.
@@ -40,5 +39,3 @@ Warning counts can overlap: one trip may trigger multiple warning rules. Do not 
 - Warning-level checks are logged and surfaced in monitoring; they do not stop processing.
 - Monitor quarantine rate, warning counts by source month/service, null rates, schema drift and reconciliation.
 
-## Notes
-The one-day source-month tolerance is a pragmatic rule for trips spanning calendar boundaries, not a claim that every out-of-window trip is erroneous. Revalidate payment and financial semantics against the applicable TLC data dictionary before production.
