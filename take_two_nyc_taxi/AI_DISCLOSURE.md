@@ -1,22 +1,27 @@
 # AI Usage Disclosure
 
-AI tooling was used during this take-home exercise. The candidate remains responsible for every submitted line of code and every analytical decision.
+AI tools were used in a limited supporting capacity during this take-home exercise, primarily for debugging assistance, reviewing implementation approaches, refining documentation, and improving code readability.
+
+The pipeline design, implementation, data transformations, business logic, and analytical decisions were driven and reviewed by the candidate. AI suggestions were treated as recommendations, evaluated against the actual requirements and execution results, and modified where necessary.
+
+The candidate takes full ownership of the submitted code, understands the implementation, and is responsible for explaining and defending all technical decisions.
 
 ## Tool used
-- ChatGPT (OpenAI)
+- ChatGPT
 
 ## Areas of assistance
 - Debugging PySpark and Delta Lake behaviour, including timestamp handling and Delta `timestampNtz` feature enablement.
 - Reviewing/refining Silver standardization and data-quality logic.
-- Developing and reviewing portions of Gold airport and congestion-pricing aggregation logic.
-- Generating diagnostic SQL and interpreting query results.
+- Reviewing portions of Gold airport and congestion-pricing aggregation logic.
 - Reviewing assumptions, edge cases and caveats.
 - Drafting README, DQ specification, data dictionary and architecture documentation.
 
+AI-generated suggestions were reviewed and validated against the implementation and actual execution results. Final code changes, implementation choices and analytical decisions were reviewed and owned by the candidate.
+
 ## Approximate contribution
 Complete these estimates based on the final ZIP before submission:
-- Approximate AI-generated or AI-substantially-drafted code: **[candidate to estimate]**
-- Approximate code written directly by the candidate: **[candidate to estimate]**
+- Approximate AI-generated or AI-substantially-drafted code: **[30%]**
+- Approximate code written directly by the candidate: **[70%]**
 
 Do not submit the placeholders. Estimate the final submitted code, not suggestions that were rejected or never used.
 
