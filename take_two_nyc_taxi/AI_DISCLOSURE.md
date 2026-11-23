@@ -19,11 +19,9 @@ The candidate takes full ownership of the submitted code, understands the implem
 AI-generated suggestions were reviewed and validated against the implementation and actual execution results. Final code changes, implementation choices and analytical decisions were reviewed and owned by the candidate.
 
 ## Approximate contribution
-Complete these estimates based on the final ZIP before submission:
+
 - Approximate AI-generated or AI-substantially-drafted code: **[30%]**
 - Approximate code written directly by the candidate: **[70%]**
-
-Do not submit the placeholders. Estimate the final submitted code, not suggestions that were rejected or never used.
 
 ## Examples of review and correction
 - Timestamp semantics were investigated after a discrepancy in pre-effective-date fee counts. The source Parquet fields were identified as `TIMESTAMP_NTZ`; Silver was changed to preserve local wall-clock timestamps instead of converting them to timezone-aware timestamps.
