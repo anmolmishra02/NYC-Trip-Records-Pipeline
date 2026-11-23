@@ -22,5 +22,4 @@ temp/
 
 # Data files
 *.parquet
-*.csv
 *.delta
